@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Search Flights</h5>
+            </div>
+            <div class="card-body">
+                <form id="flightSearchForm">
+                    <div class="mb-3">
+                        <label class="form-label">From</label>
+                        <input type="text" class="form-control" id="departure" placeholder="City or Airport Code">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">To</label>
+                        <input type="text" class="form-control" id="arrival" placeholder="City or Airport Code">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Departure Date</label>
+                        <input type="date" class="form-control" id="date">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Passengers</label>
+                        <select class="form-control" id="passengers">
+                            <option value="1">1 Passenger</option>
+                            <option value="2">2 Passengers</option>
+                            <option value="3">3 Passengers</option>
+                            <option value="4">4 Passengers</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Search Flights</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Available Flights</h5>
+            </div>
+            <div class="card-body">
+                <div id="flightResults">
+                    <p class="text-muted text-center">Use the search form to find flights</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Flight search functionality will be implemented in main.js
+</script>
+{% endblock %}

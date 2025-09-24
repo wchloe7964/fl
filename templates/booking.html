@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Complete Your Booking</h5>
+            </div>
+            <div class="card-body">
+                <div id="bookingDetails" class="mb-4">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Flight details will appear here after selection
+                    </div>
+                </div>
+                
+                <form id="bookingForm" style="display: none;">
+                    <h6 class="border-bottom pb-2">Passenger Information</h6>
+                    
+                    <div id="passengersContainer">
+                        <!-- Passenger forms will be dynamically added here -->
+                    </div>
+                    
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addPassenger()">
+                            <i class="fas fa-plus"></i> Add Another Passenger
+                        </button>
+                    </div>
+                    
+                    <h6 class="border-bottom pb-2 mt-4">Payment Information</h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Payment Method</label>
+                            <select class="form-control" name="payment_method" required>
+                                <option value="">Select payment method</option>
+                                <option value="credit_card">Credit Card</option>
+                                <option value="debit_card">Debit Card</option>
+                                <option value="paypal">PayPal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Seats</label>
+                            <select class="form-control" name="seats_booked" id="seatsBooked" required>
+                                <option value="1">1 Seat</option>
+                                <option value="2">2 Seats</option>
+                                <option value="3">3 Seats</option>
+                                <option value="4">4 Seats</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-credit-card"></i> Complete Booking - $<span id="totalPrice">0.00</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadBookingDetails();
+});
+
+function loadBookingDetails() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const flightId = urlParams.get('flight');
+    
+    if (!flightId) {
+        showAlert('No flight selected. Please search for flights first.', 'warning');
+        return;
+    }
+    
+    fetch(`/api/flights/${flightId}/`)
+        .then(response => response.json())
+        .then(flight => {
+            displayFlightDetails(flight);
+            setupBookingForm(flight);
+        })
+        .catch(error => {
+            console.error('Error loading flight details:', error);
+            showAlert('Error loading flight details. Please try again.', 'danger');
+        });
+}
+
+function displayFlightDetails(flight) {
+    const detailsContainer = document.getElementById('bookingDetails');
+    
+    detailsContainer.innerHTML = `
+        <div class="flight-card card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="mb-1">${flight.departure_airport.city} → ${flight.arrival_airport.city}</h6>
+                        <small class="text-muted">${flight.airline} • ${flight.flight_number}</small>
+                        <div class="mt-2">
+                            <small><strong>Departure:</strong> ${new Date(flight.departure_time).toLocaleString()}</small><br>
+                            <small><strong>Arrival:</strong> ${new Date(flight.arrival_time).toLocaleString()}</small><br>
+                            <small><strong>Duration:</strong> ${formatDuration(flight.duration)}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <h4 class="text-primary mb-0">$${flight.price}</h4>
+                        <small class="text-muted">per passenger</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function setupBookingForm(flight) {
+    const form = document.getElementById('bookingForm');
+    form.style.display = 'block';
+    
+    // Add first passenger form
+    addPassenger();
+    
+    // Update total price when seats change
+    document.getElementById('seatsBooked').addEventListener('change', function() {
+        updateTotalPrice(flight.price, this.value);
+    });
+    
+    // Initial price update
+    updateTotalPrice(flight.price, 1);
+    
+    // Handle form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitBooking(flight.id);
+    });
+}
+
+function addPassenger() {
+    const container = document.getElementById('passengersContainer');
+    const passengerCount = container.children.length + 1;
+    
+    const passengerHtml = `
+        <div class="passenger-form card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">Passenger ${passengerCount}</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-control" name="first_name_${passengerCount}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-control" name="last_name_${passengerCount}" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" name="dob_${passengerCount}" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Gender</label>
+                        <select class="form-control" name="gender_${passengerCount}" required>
+                            <option value="">Select</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                            <option value="O">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Passport Number</label>
+                        <input type="text" class="form-control" name="passport_${passengerCount}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', passengerHtml);
+}
+
+function updateTotalPrice(pricePerSeat, seats) {
+    const totalPrice = pricePerSeat * seats;
+    document.getElementById('totalPrice').textContent = totalPrice.toFixed(2);
+}
+
+function submitBooking(flightId) {
+    if (!confirm('Are you sure you want to complete this booking?')) {
+        return;
+    }
+    
+    const formData = new FormData(document.getElementById('bookingForm'));
+    const seats = parseInt(formData.get('seats_booked'));
+    
+    const bookingData = {
+        flight_id: flightId,
+        seats_booked: seats,
+        payment_method: formData.get('payment_method')
+    };
+    
+    fetch('/api/bookings/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(bookingData)
+    })
+    .then(response => response.json())
+    .then(booking => {
+        showAlert('Booking created successfully! Processing payment...', 'success');
+        processPayment(booking.id);
+    })
+    .catch(error => {
+        console.error('Error creating booking:', error);
+        showAlert('Error creating booking. Please try again.', 'danger');
+    });
+}
+
+function processPayment(bookingId) {
+    fetch(`/api/payments/process/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ booking_id: bookingId })
+    })
+    .then(response => response.json())
+    .then(result => {
+        showAlert(`Payment successful! Your booking reference is: ${result.booking_reference}`, 'success');
+        setTimeout(() => {
+            window.location.href = '/api/bookings/';
+        }, 3000);
+    })
+    .catch(error => {
+        console.error('Error processing payment:', error);
+        showAlert('Payment processing failed. Please try again.', 'danger');
+    });
+}
+
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero-section bg-light rounded p-5 mb-5">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h1 class="display-4">Book Your Flight with Ease</h1>
+            <p class="lead">Find the best deals on flights worldwide. Easy booking, great prices, excellent service.</p>
+            <a href="{% url 'flights' %}" class="btn btn-primary btn-lg">Search Flights</a>
+        </div>
+        <div class="col-md-6 text-center">
+            <i class="fas fa-plane-departure display-1 text-primary"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-search fa-3x text-primary mb-3"></i>
+                <h5>Search Flights</h5>
+                <p>Find flights from thousands of destinations worldwide.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-ticket-alt fa-3x text-success mb-3"></i>
+                <h5>Easy Booking</h5>
+                <p>Simple and secure booking process with instant confirmation.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-headset fa-3x text-info mb-3"></i>
+                <h5>24/7 Support</h5>
+                <p>Round-the-clock customer support for all your travel needs.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
